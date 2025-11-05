@@ -54,7 +54,7 @@ import { ref, onMounted, computed, nextTick } from 'vue'
 interface Props {
   user?: promptly.UserType
   fullScreen?: boolean
-  onSubmit?: (input: string) => Promise<string>
+  onSubmit?: (input: string) => Promise<void>
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -190,8 +190,7 @@ const handleSubmit = async () => {
   // 执行命令
   if (props.onSubmit) {
     try {
-      const res = await props.onSubmit(command)
-      terminal.success(res)
+      await props.onSubmit(command)
     } catch (error) {
       terminal.error(`Error executing command: ${error}`)
     }

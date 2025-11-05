@@ -15,8 +15,8 @@ const userStore = useUserStore()
 const { loginUser } = storeToRefs(userStore)
 
 const submitCommand = async (input: string) => {
-  terminalRef.value.terminal.error("fuck")
-  return executeCommand(input)
+  const terminal = terminalRef.value.terminal
+  executeCommand(input, terminal)
 }
 
 onMounted(() => {
