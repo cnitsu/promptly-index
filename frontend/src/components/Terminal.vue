@@ -40,9 +40,11 @@
       <!-- 输入行 -->
       <div class="input-line">
         <span class="prompt">{{ prompt }}</span>
-        <span class="text" style="white-space: pre;">{{ userInput }}</span>
+        <span class="text" style="white-space: pre;">{{ userInput.slice(0, cursorPosition) }}</span>
         <span class="cursor" :class="{ blink: isBlinking }">_</span>
-        <input ref="hiddenInput" v-model="userInput" class="hidden-input" @blur="onBlur" @keydown="handleKeyDown">
+        <span class="text" style="white-space: pre;">{{ userInput.slice(cursorPosition) }}</span>
+        <input ref="hiddenInput" v-model="userInput" class="hidden-input" @blur="onBlur" @keydown="handleKeyDown"
+          @input="handleInput">
       </div>
     </div>
   </div>
@@ -66,6 +68,7 @@ const hiddenInput = ref<HTMLInputElement | null>(null)
 const terminalRef = ref<HTMLElement | null>(null)
 const outputList = ref<promptly.OutputType[]>([])
 const isBlinking = ref<boolean>(true)
+const cursorPosition = ref<number>(0)
 
 const prompt = computed(() => {
   let promptFmt = props.user?.prompt
@@ -201,7 +204,30 @@ const handleKeyDown = (event: KeyboardEvent) => {
   if (event.key === 'Enter') {
     event.preventDefault()
     handleSubmit()
+    return
   }
+
+  const target = event.target as HTMLInputElement
+  let pos = target.selectionStart
+
+  console.log(pos)
+  if (pos == null) {
+    cursorPosition.value = 0
+    return
+  }
+  if (event.key === 'ArrowLeft') {
+    pos -= 1
+  }
+  if (event.key === 'ArrowRight') {
+    pos += 1
+  }
+  cursorPosition.value = Math.max(pos, 0)
+}
+
+const handleInput = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  let pos = target.selectionStart
+  cursorPosition.value = Math.max(pos ? pos : 0, 0)
 }
 
 onMounted(() => {
