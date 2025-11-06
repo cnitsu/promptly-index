@@ -3,8 +3,8 @@
     <div ref="terminalRef" class="terminal" :style="terminalStyle" @click="focusInput">
       <div v-if="!isLogin" class="output-area">
         <p>Promptly v0.1 (web tty)</p>
-        <p>login: <span v-html="usernameTemp"></span></p>
-        <p>password: </p>
+        <p>login: <span>{{ usernameTemp }}</span></p>
+        <p>password: <span>{{ passwordDisplay }}</span></p>
       </div>
       <!-- 输出区域 -->
       <div v-else class="output-area">
@@ -80,6 +80,7 @@ const cursorPosition = ref<number>(0)
 
 const usernameTemp = ref<string>('fuck vue')
 const passwordTemp = ref<string>('')
+const loginStep = ref<'username' | 'password'>('username')
 
 const isLogin = computed(() => {
   return props.user?.username ? true : false
@@ -218,8 +219,21 @@ const handleSubmit = async () => {
 const handleKeyDown = (event: KeyboardEvent) => {
   if (event.key === 'Enter') {
     event.preventDefault()
-    if (!isLogin) {
-      usernameTemp.value = userInput.value
+    if (!isLogin.value) {
+      if (loginStep.value === 'username') {
+        // 用户名输入完成，切换到密码输入
+        usernameTemp.value = userInput.value
+        userInput.value = ''
+        cursorPosition.value = 0
+        loginStep.value = 'password'
+      } else {
+        // 密码输入完成
+        passwordTemp.value = userInput.value
+        userInput.value = ''
+        cursorPosition.value = 0
+        // 这里可以添加登录逻辑
+        // TODO: 处理登录
+      }
       return
     }
     handleSubmit()
@@ -247,7 +261,20 @@ const handleInput = (event: Event) => {
   const target = event.target as HTMLInputElement
   let pos = target.selectionStart
   cursorPosition.value = Math.max(pos ? pos : 0, 0)
+  
+  // 实时更新登录显示
+  if (!isLogin.value) {
+    if (loginStep.value === 'username') {
+      usernameTemp.value = userInput.value
+    } else {
+      passwordTemp.value = userInput.value
+    }
+  }
 }
+
+const passwordDisplay = computed(() => {
+  return Array(passwordTemp.value.length + 1).join('*')
+})
 
 onMounted(() => {
   focusInput()
