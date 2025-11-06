@@ -5,12 +5,18 @@
         <p>Promptly v0.1 (web tty)</p>
         <p>login: <span>{{ usernameTemp }}</span></p>
         <p>password: <span>{{ passwordDisplay }}</span></p>
+        <!-- 文本输出 -->
+        <template v-for="output in outputList" :key="index">
+          <div class="terminal-row text-output" :class="output.status">
+            <span class="output-text">{{ output.text }}</span>
+          </div>
+        </template>
       </div>
       <!-- 输出区域 -->
       <div v-else class="output-area">
         <p>Promptly v0.1 (web tty)</p>
-        <p>> welcome {{ user?.username }}</p>
-        <p>> type 'help' to get some sugguesion</p>
+        <p>welcome {{ user?.username }}</p>
+        <p>type 'help' to get some sugguesion</p>
         <template v-for="(output, index) in outputList" :key="index">
           <!-- 命令行输出 -->
           <div v-if="output.type === 'command'" class="terminal-row command-line">
@@ -47,7 +53,8 @@
 
       <!-- 输入行 -->
       <div class="input-line">
-        <span class="prompt">{{ prompt }}</span>
+        <span v-if="!isLogin" class="prompt">{{ "[login]" + loginStep + prompt + ": " }}</span>
+        <span v-else class="prompt">{{ prompt }}</span>
         <span class="text" style="white-space: pre;">{{ userInput.slice(0, cursorPosition) }}</span>
         <span class="cursor" :class="{ blink: isBlinking }">_</span>
         <span class="text" style="white-space: pre;">{{ userInput.slice(cursorPosition) }}</span>
@@ -60,9 +67,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, nextTick } from 'vue'
+import { useUserStore } from '../composables/useUserStore';
 
 interface Props {
   user?: promptly.UserType
+  onLogin: (username: string, password: string) => Promise<any>
   fullScreen?: boolean
   onSubmit?: (input: string) => Promise<void>
 }
@@ -78,7 +87,7 @@ const outputList = ref<promptly.OutputType[]>([])
 const isBlinking = ref<boolean>(true)
 const cursorPosition = ref<number>(0)
 
-const usernameTemp = ref<string>('fuck vue')
+const usernameTemp = ref<string>('')
 const passwordTemp = ref<string>('')
 const loginStep = ref<'username' | 'password'>('username')
 
@@ -91,7 +100,7 @@ const prompt = computed(() => {
   let username = props.user?.username
 
   if (promptFmt && username) {
-    promptFmt.replace('{:username}', username)
+    return promptFmt.replace('{:username}', username)
   }
   return '>'
 })
@@ -216,7 +225,7 @@ const handleSubmit = async () => {
   }
 }
 
-const handleKeyDown = (event: KeyboardEvent) => {
+const handleKeyDown = async (event: KeyboardEvent) => {
   if (event.key === 'Enter') {
     event.preventDefault()
     if (!isLogin.value) {
@@ -233,6 +242,17 @@ const handleKeyDown = (event: KeyboardEvent) => {
         cursorPosition.value = 0
         // 这里可以添加登录逻辑
         // TODO: 处理登录
+        const res = await props.onLogin(usernameTemp.value, passwordTemp.value)
+        if (res.code === 0) {
+          const userStore = useUserStore()
+          userStore.setLoginUser(res.data)
+          terminal.clear()
+        } else {
+          terminal.error("login failure: " + res.msg)
+          loginStep.value = 'username'
+          usernameTemp.value = ''
+          passwordTemp.value = ''
+        }
       }
       return
     }
@@ -261,7 +281,7 @@ const handleInput = (event: Event) => {
   const target = event.target as HTMLInputElement
   let pos = target.selectionStart
   cursorPosition.value = Math.max(pos ? pos : 0, 0)
-  
+
   // 实时更新登录显示
   if (!isLogin.value) {
     if (loginStep.value === 'username') {
