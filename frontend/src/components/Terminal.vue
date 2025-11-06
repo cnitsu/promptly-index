@@ -235,29 +235,40 @@ const handleKeyDown = async (event: KeyboardEvent) => {
         userInput.value = ''
         cursorPosition.value = 0
         loginStep.value = 'password'
+        const inputSpans = document.querySelectorAll<HTMLElement>('.text')
+        for (const inputSpan of inputSpans) {
+          inputSpan.style.visibility = 'hidden'
+        }
       } else {
         // 密码输入完成
         passwordTemp.value = userInput.value
         userInput.value = ''
         cursorPosition.value = 0
         // 这里可以添加登录逻辑
-        // TODO: 处理登录
         const res = await props.onLogin(usernameTemp.value, passwordTemp.value)
         if (res.code === 0) {
           const userStore = useUserStore()
           userStore.setLoginUser(res.data)
           terminal.clear()
         } else {
-          terminal.error("login failure: " + res.msg)
+          terminal.error("Login incorrect")
           loginStep.value = 'username'
           usernameTemp.value = ''
           passwordTemp.value = ''
+        }
+        const inputSpans = document.querySelectorAll<HTMLElement>('.text')
+        for (const inputSpan of inputSpans) {
+          inputSpan.style.visibility = 'visible'
         }
       }
       return
     }
     handleSubmit()
     return
+  }
+
+  if (!isLogin.value && loginStep.value === 'password') {
+    cursorPosition.value = 0
   }
 
   const target = event.target as HTMLInputElement
@@ -278,18 +289,19 @@ const handleKeyDown = async (event: KeyboardEvent) => {
 }
 
 const handleInput = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  let pos = target.selectionStart
-  cursorPosition.value = Math.max(pos ? pos : 0, 0)
-
   // 实时更新登录显示
   if (!isLogin.value) {
     if (loginStep.value === 'username') {
       usernameTemp.value = userInput.value
     } else {
       passwordTemp.value = userInput.value
+      cursorPosition.value = 0
+      return
     }
   }
+  const target = event.target as HTMLInputElement
+  let pos = target.selectionStart
+  cursorPosition.value = Math.max(pos ? pos : 0, 0)
 }
 
 const passwordDisplay = computed(() => {
