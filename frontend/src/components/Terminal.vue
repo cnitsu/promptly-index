@@ -1,8 +1,16 @@
 <template>
   <div class="terminal-wrapper" :style="wrapperStyle" @click="handleWrapperClick">
     <div ref="terminalRef" class="terminal" :style="terminalStyle" @click="focusInput">
+      <div v-if="!isLogin" class="output-area">
+        <p>Promptly v0.1 (web tty)</p>
+        <p>login: <span v-html="usernameTemp"></span></p>
+        <p>password: </p>
+      </div>
       <!-- 输出区域 -->
-      <div class="output-area">
+      <div v-else class="output-area">
+        <p>Promptly v0.1 (web tty)</p>
+        <p>> welcome {{ user?.username }}</p>
+        <p>> type 'help' to get some sugguesion</p>
         <template v-for="(output, index) in outputList" :key="index">
           <!-- 命令行输出 -->
           <div v-if="output.type === 'command'" class="terminal-row command-line">
@@ -69,6 +77,13 @@ const terminalRef = ref<HTMLElement | null>(null)
 const outputList = ref<promptly.OutputType[]>([])
 const isBlinking = ref<boolean>(true)
 const cursorPosition = ref<number>(0)
+
+const usernameTemp = ref<string>('fuck vue')
+const passwordTemp = ref<string>('')
+
+const isLogin = computed(() => {
+  return props.user?.username ? true : false
+})
 
 const prompt = computed(() => {
   let promptFmt = props.user?.prompt
@@ -203,6 +218,10 @@ const handleSubmit = async () => {
 const handleKeyDown = (event: KeyboardEvent) => {
   if (event.key === 'Enter') {
     event.preventDefault()
+    if (!isLogin) {
+      usernameTemp.value = userInput.value
+      return
+    }
     handleSubmit()
     return
   }
