@@ -19,6 +19,7 @@ var userKey key
 type userInfo struct {
 	UID      uint64 `json:"uid"`
 	Username string `json:"username"`
+	Prompt   string `json:"prompt"`
 }
 
 func newContext(ctx context.Context, u *userInfo) context.Context {
@@ -50,6 +51,7 @@ func JWT() gin.HandlerFunc {
 		ctx.Request = ctx.Request.WithContext(newContext(ctx, &userInfo{
 			UID:      claims.UID,
 			Username: claims.Username,
+			Prompt:   claims.Prompt,
 		}))
 		ctx.Next()
 	}
