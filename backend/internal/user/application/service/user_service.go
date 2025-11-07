@@ -6,6 +6,7 @@ import (
 	"errors"
 	"sync"
 
+	"promptly-server/internal/user/application/auth"
 	"promptly-server/internal/user/domain/entity"
 	"promptly-server/internal/user/domain/service"
 
@@ -14,7 +15,7 @@ import (
 
 type iService interface {
 	Register(ctx context.Context, user *entity.UserEntity) (*entity.UserEntity, error)
-	Login(ctx context.Context, user *entity.UserEntity) (*entity.UserEntity, error)
+	Login(ctx context.Context, user *entity.UserEntity) (string, error)
 }
 
 type userServiceImpl struct {
@@ -48,14 +49,15 @@ func (s *userServiceImpl) Register(ctx context.Context, user *entity.UserEntity)
 	return s.userDomain.CreateUser(ctx, user)
 }
 
-func (s *userServiceImpl) Login(ctx context.Context, user *entity.UserEntity) (*entity.UserEntity, error) {
+func (s *userServiceImpl) Login(ctx context.Context, user *entity.UserEntity) (string, error) {
 	u, err := s.userDomain.FindUserByUsername(ctx, user.Username)
 	if u == nil || err != nil {
-		return nil, errors.New("login incorrect")
+		return "", errors.New("login incorrect")
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(user.Password))
 	if err != nil {
-		return nil, errors.New("login incorrect")
+		return "", errors.New("login incorrect")
 	}
-	return u, errors.New("login incorrect")
+	token := auth.GenerateToken(ctx, u.ID, u.Username)
+	return token, errors.New("login incorrect")
 }

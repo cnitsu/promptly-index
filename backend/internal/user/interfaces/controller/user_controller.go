@@ -25,7 +25,7 @@ func UserRegisterHandler() gin.HandlerFunc {
 			ctx.JSON(http.StatusBadRequest, response.Error(err.Error()))
 			return
 		}
-		ctx.JSON(http.StatusOK, response.Success(res))
+		ctx.JSON(http.StatusOK, response.Success(res.CreateAt))
 	}
 }
 
