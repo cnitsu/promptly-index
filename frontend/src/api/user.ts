@@ -6,13 +6,16 @@ export const login = async (username: string, password: string) => {
   }
   return await instance.post('/v1/user/login', { username: username, password: password })
     .then((response) => {
-      console.log(response.data);
-      return response.data.data
+      return response.data
+    }).catch(error => {
+      return error.response.data
     })
 }
 export const getLoginUser = async () => {
   return await instance.get('/v1/user/info')
     .then((response) => {
-      return response.data.data
+      return response.data
+    }).catch(error => {
+      return error.response.data
     })
 }
