@@ -13,7 +13,9 @@ func main() {
 	// load infra
 	userinfra.InitUserApp()
 	// load route
-	e := gin.Default()
+	e := gin.New()
+	e.Use(gin.Logger())
+	e.Use(gin.Recovery())
 	err := e.SetTrustedProxies([]string{"127.0.0.1"})
 	if err != nil {
 		panic(err)
