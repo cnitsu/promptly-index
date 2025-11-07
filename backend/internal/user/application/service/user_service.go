@@ -58,6 +58,6 @@ func (s *userServiceImpl) Login(ctx context.Context, user *entity.UserEntity) (s
 	if err != nil {
 		return "", errors.New("login incorrect")
 	}
-	token := auth.GenerateToken(ctx, u.ID, u.Username)
+	token := auth.GenerateToken(ctx, u)
 	return token, errors.New("login incorrect")
 }

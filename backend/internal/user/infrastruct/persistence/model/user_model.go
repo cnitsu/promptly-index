@@ -7,4 +7,5 @@ type User struct {
 	gorm.Model
 	Username     string `gorm:"unique"`
 	PasswordHash string `gorm:"not null"`
+	Prompt       string `gorm:""`
 }

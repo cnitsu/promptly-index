@@ -6,16 +6,19 @@ import (
 	"errors"
 	"time"
 
+	"promptly-server/internal/user/domain/entity"
+
 	"github.com/golang-jwt/jwt/v5"
 )
 
 type Claims struct {
 	UID      uint64 `json:"uid"`
 	Username string `json:"username"`
+	Prompt   string `json:"prompt"`
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(ctx context.Context, uid uint64, username string) string {
+func GenerateToken(ctx context.Context, entity *entity.UserEntity) string {
 	var (
 		key []byte
 		t   *jwt.Token
@@ -24,8 +27,9 @@ func GenerateToken(ctx context.Context, uid uint64, username string) string {
 
 	key = []byte("zzHq+W8NfMpauvJJFB+ufl2guP6sgq59Ys4w66+YqiE=")
 	claims := &Claims{
-		UID:      uid,
-		Username: username,
+		UID:      entity.ID,
+		Username: entity.Username,
+		Prompt:   entity.Prompt,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(time.Duration(24).Hours()))),
 			Issuer:    "Promptly",
