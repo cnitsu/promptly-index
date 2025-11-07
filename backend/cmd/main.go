@@ -2,18 +2,25 @@
 package main
 
 import (
-	"promptly-server/config"
-	"promptly-server/interfaces/initialize"
+	userinfra "promptly-server/internal/user/infrastruct"
+	"promptly-server/internal/user/interfaces/initialize"
+	"promptly-server/pkg/config"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	// load configs
-	config.InitConfig()
 	// load infra
+	userinfra.InitUserApp()
 	// load route
-	e := initialize.NewRouter()
+	e := gin.Default()
+	err := e.SetTrustedProxies([]string{"127.0.0.1"})
+	if err != nil {
+		panic(err)
+	}
+	initialize.RegisterUserRouter(e)
 	// boot proj
-	err := e.Run(config.AppConfig.Server.Address)
+	err = e.Run(config.AppConfig.Server.Address)
 	if err != nil {
 		panic(err)
 	}

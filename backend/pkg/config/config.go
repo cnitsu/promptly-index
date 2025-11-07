@@ -2,6 +2,7 @@
 package config
 
 import (
+	"log"
 	"os"
 
 	"github.com/spf13/viper"
@@ -20,7 +21,13 @@ type Server struct {
 	Version string `yaml:"version"`
 }
 
-type MySQL struct{}
+type MySQL struct {
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	User     string `yaml:"user"`
+	Password string `yaml:"passowrd"`
+	Dbname   string `yaml:"dbname"`
+}
 
 type Redis struct {
 	Database uint8  `yaml:"database"`
@@ -29,14 +36,14 @@ type Redis struct {
 	Password string `yaml:"passowrd"`
 }
 
-func InitConfig() {
+func init() {
 	pwd, err := os.Getwd()
 	if err != nil {
 		panic(err)
 	}
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath(pwd + "/config")
+	viper.AddConfigPath(pwd)
 	err = viper.ReadInConfig()
 	if err != nil {
 		panic(err)
@@ -45,4 +52,5 @@ func InitConfig() {
 	if err != nil {
 		panic(err)
 	}
+	log.Println("AppConfig established successfully")
 }
