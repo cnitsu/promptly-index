@@ -9,7 +9,7 @@ import (
 func Entity2PO(entity *entity.UserEntity) *model.User {
 	return &model.User{
 		Username:     entity.Username,
-		PasswordHash: entity.Password, // TODO: hash Password
+		PasswordHash: entity.Password,
 	}
 }
 
