@@ -247,11 +247,12 @@ const handleKeyDown = async (event: KeyboardEvent) => {
         // 这里可以添加登录逻辑
         const res = await props.onLogin(usernameTemp.value, passwordTemp.value)
         if (res.code === 0) {
+          localStorage.setItem('user-token', res.data)
           const userStore = useUserStore()
-          userStore.setLoginUser(res.data)
+          userStore.getAndSetLoginUser()
           terminal.clear()
         } else {
-          terminal.error("Login incorrect")
+          terminal.error(res.msg)
           loginStep.value = 'username'
           usernameTemp.value = ''
           passwordTemp.value = ''
@@ -274,7 +275,6 @@ const handleKeyDown = async (event: KeyboardEvent) => {
   const target = event.target as HTMLInputElement
   let pos = target.selectionStart
 
-  console.log(pos)
   if (pos == null) {
     cursorPosition.value = 0
     return
