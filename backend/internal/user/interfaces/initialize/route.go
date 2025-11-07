@@ -3,12 +3,13 @@ package initialize
 
 import (
 	"promptly-server/internal/user/interfaces/controller"
+	"promptly-server/internal/user/interfaces/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 func RegisterUserRouter(engine *gin.Engine) {
-	engine.Use() // TODO: use some middlewares
+	engine.Use(middleware.JWT())
 	v1 := engine.Group("api/v1")
 	{
 		v1.GET("ping", func(ctx *gin.Context) {
